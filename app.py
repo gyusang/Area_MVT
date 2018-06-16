@@ -41,8 +41,12 @@ def sign(i):
     else:
         None
 
+def slope_line(ax,slope,p):
+    new_line(ax,(p[0],p[0]+1),(p[1],p[1]+slope))
+
 def poly_area(plg,slope,p):#볼록 다각형 가정, plg : polygon points, slope : slope of line, y : y절편
     global ax
+    #ax.plot(p[0],p[1],'o')
     y = p[1]-slope*p[0]+0.00000001
     xrange = [min(plg,key=lambda x:x[0])[0],max(plg,key=lambda x:x[0])[0]]
     yrange = [min(plg,key=lambda x:x[1])[1],max(plg,key=lambda x:x[1])[1]]
@@ -75,6 +79,19 @@ def poly_area(plg,slope,p):#볼록 다각형 가정, plg : polygon points, slope
 #    draw_poly(ax,Polygon(sectors[1]))
     return abs(Polygon(sectors[0]).area - Polygon(sectors[1]).area)
 
+def poly_slope_half(plg,slope,ax,ay=None):
+    dist = [k[1]-k[0]*slope for k in plg]
+    yrange = (min(dist),max(dist))
+    y = np.arange(yrange[0]-1,yrange[1]+1,0.01)
+    areas = [poly_area(plg,slope,(0,k)) for k in y]
+    if ay:
+        ay.plot(y,areas)
+    min_area = min(areas)
+    print(min_area)
+    result = y[areas.index(min_area)]
+    slope_line(ax,slope,(0,result))
+    return result
+
 C = (2.94, 2.46)
 D = (2.28, 3.96)
 E = (-0.22, 4.32)
@@ -88,15 +105,18 @@ ay = fig.add_subplot(122)
 ax.set_aspect(1)
 #ay.set_aspect(1)
 ax.set_title('Polygon')
-ay.set_title('Aray by slope')
+ay.set_title('Area by Location')
 ax.set_xlim((plg.bounds[0]-1,plg.bounds[2]+1))
 ax.set_ylim((plg.bounds[1]-1,plg.bounds[3]+1))
 draw_poly(ax,plg)
-X = np.linspace(-10,10)
-ax.plot(E[0],E[1],'o')
-Y = [poly_area([C,D,E,F,G],x,E) for x in X]
-print(X[Y.index(min(Y))])
+#X = sorted(list(np.random.triangular(-10,0,10,1000)))
+#p = C
+#Y = [poly_area([C,D,E,F,G],x,p) for x in X]
+#minimum = X[Y.index(min(Y))]
+#slope_line(ax,minimum,p)
+print(poly_slope_half([C,D,E,F,G],10,ax,ay))
+#print(min(Y))
 #result = poly_area([C,D,E,F,G],0,E)
 #print(result)
-ay.plot(X,Y)
+#ay.plot(X,Y)
 plt.show()
