@@ -146,7 +146,7 @@ def find_a_half(plg1,plg2,ax=None,ay=None):
     if areas[0]<0:
         thetarange.reverse()
     while True:
-        if abs(thetarange[1]-thetarange[0])<0.000001:
+        if abs(thetarange[1]-thetarange[0])<0.000001 and max(thetarange,key=lambda x:abs(x))>np.pi/2-0.02:
             print("Failed to find")
             return None
         new_half = sum(thetarange)/2
@@ -161,6 +161,22 @@ def find_a_half(plg1,plg2,ax=None,ay=None):
         slope_line(ax,slope,(0,find_b_half(plg1,slope)))
     #print("D=%f,theta=%f"%(D,new_half))
     return (slope,find_b_half(plg1,slope))
+
+def draw_half(plg1=[(1, 1),(1.7, 1.66),(4.28, 1.6),(3.06, 0.2),(1.26, -0.12)],
+plg2=[(1.6, 2.94),(2.34, 1.34),(3.38, 1.14),(5.9, 2.18),(4, 4)]):
+    fig = plt.figure('Ham Sandwich Theorem')
+    ax = fig.add_subplot(111)
+    ax.set_aspect(1)
+    ax.set_title('Polygon')
+    ax.set_xlim((min(Polygon(plg1).bounds[0],Polygon(plg2).bounds[0])-1,
+    max(Polygon(plg1).bounds[2],Polygon(plg2).bounds[2])+1))
+    ax.set_ylim((min(Polygon(plg1).bounds[1],Polygon(plg2).bounds[1])-1,
+    max(Polygon(plg1).bounds[3],Polygon(plg2).bounds[3])+1))
+    draw_poly(ax,plg1,'#27567b')
+    draw_poly(ax,plg2,'#b63b3b')
+    result = find_a_half(plg1,plg2,ax)
+    plt.show()
+    return result
 
 if __name__=="__main__":#예제
     A = (1, 1)#10개의 점을 지정한다
