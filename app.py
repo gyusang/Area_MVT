@@ -29,7 +29,7 @@ def plot_line(ax, ob):
     new_line(ax,x,y)
 
 def draw_poly(ax, ob):
-    ax.add_patch(PolygonPatch(ob))
+    ax.add_patch(PolygonPatch(ob,alpha=0.8))
 
 def sign(i):
     if i>0:
@@ -47,7 +47,7 @@ def slope_line(ax,slope,p):
 def poly_area(plg,slope,p):#볼록 다각형 가정, plg : polygon points, slope : slope of line, y : y절편
     global ax
     #ax.plot(p[0],p[1],'o')
-    y = p[1]-slope*p[0]+0.00000001
+    y = p[1]-slope*p[0]+0.00000001#점이 일치하면 부등식에 오류가 생기는 것을 방지하기 위해 약간 띄움
     xrange = [min(plg,key=lambda x:x[0])[0],max(plg,key=lambda x:x[0])[0]]
     yrange = [min(plg,key=lambda x:x[1])[1],max(plg,key=lambda x:x[1])[1]]
     line = LineString([(xrange[0],slope*xrange[0]+y),(xrange[1],slope*xrange[1]+y)])
@@ -55,8 +55,8 @@ def poly_area(plg,slope,p):#볼록 다각형 가정, plg : polygon points, slope
     ring = LinearRing(plg)
     inter = line.intersection(ring)
     if inter.is_empty or type(inter)==Point :
-        result = 1 #if len([k for k in plg if k[1]>(slope*k[0]+y)])>0 else -1
-        result *= Polygon(plg).area
+        result = 1 if len([k for k in plg if k[1]>(slope*k[0]+y)])>0 else -1
+        result *= Polygon(plg).area/2
         return result
 
     status = sign(plg[-1][1]-(slope*plg[-1][0]+y))
@@ -77,19 +77,38 @@ def poly_area(plg,slope,p):#볼록 다각형 가정, plg : polygon points, slope
         status = D
 #    draw_poly(ax,Polygon(sectors[0]))
 #    draw_poly(ax,Polygon(sectors[1]))
-    return abs(Polygon(sectors[0]).area - Polygon(sectors[1]).area)
+    return Polygon(sectors[0]).area-Polygon(plg).area/2
 
-def poly_slope_half(plg,slope,ax,ay=None):
+def find_slope_half(plg,slope,ax=None,ay=None):
+    dist = [k[1]-k[0]*slope for k in plg]
+    yrange = [min(dist),max(dist)]
+    while True:
+        new_half = sum(yrange)/2
+        D = poly_area(plg,slope,(0,new_half))
+        if abs(D)<0.001: break
+        elif D>0: yrange[0]=new_half
+        elif D<0: yrange[1]=new_half
+        if ay:
+            ay.plot(new_half,D,'o')
+    if ax:
+        slope_line(ax,slope,(0,new_half))
+    print('slope_half error:%d'%D)
+    return new_half
+
+def show_slope_graph(plg,slope,ax=None,ay=None):
     dist = [k[1]-k[0]*slope for k in plg]
     yrange = (min(dist),max(dist))
     y = np.arange(yrange[0]-1,yrange[1]+1,0.01)
     areas = [poly_area(plg,slope,(0,k)) for k in y]
     if ay:
         ay.plot(y,areas)
-    min_area = min(areas)
+    min_area = min(areas,key=lambda x:abs(x))
     print(min_area)
     result = y[areas.index(min_area)]
-    slope_line(ax,slope,(0,result))
+    if ax:
+        slope_line(ax,slope,(0,result))
+        slope_line(ax,slope,(0,yrange[0]))
+        slope_line(ax,slope,(0,yrange[1]))
     return result
 
 C = (2.94, 2.46)
@@ -114,7 +133,9 @@ draw_poly(ax,plg)
 #Y = [poly_area([C,D,E,F,G],x,p) for x in X]
 #minimum = X[Y.index(min(Y))]
 #slope_line(ax,minimum,p)
-print(poly_slope_half([C,D,E,F,G],10,ax,ay))
+
+#print(show_slope_graph([C,D,E,F,G],-1,ax,ay))
+print(find_slope_half([C,D,E,F,G],np.sqrt(31),ax,ay))
 #print(min(Y))
 #result = poly_area([C,D,E,F,G],0,E)
 #print(result)
