@@ -42,7 +42,7 @@ def slope_line(ax,slope,p): #기울기와 한 점으로 직선을 그리는 함�
 
 def poly_area(plg,slope,p):#다각형에서 직선 위 부분의 넓이에서 다각형 넓이의 절반을 뺀 값을 반환하는 함수
     global ax
-    y = p[1]-slope*p[0]+0.00000001#점이 일치하면 부등식에 오류가 생기는 것을 방지하기 위해 약간 띄움
+    y = p[1]-slope*p[0]#+0.00000001#점이 일치하면 부등식에 오류가 생기는 것을 방지하기 위해 약간 띄움
     xrange = [min(plg,key=lambda x:x[0])[0],max(plg,key=lambda x:x[0])[0]]
     yrange = [min(plg,key=lambda x:x[1])[1],max(plg,key=lambda x:x[1])[1]]
     line = LineString([(xrange[0],slope*xrange[0]+y),(xrange[1],slope*xrange[1]+y)])
